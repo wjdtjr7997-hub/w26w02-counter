@@ -2,16 +2,273 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>카운터</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뽀모도로 타이머</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #20212a;
+  --muted: #8b8e9b;
+  --line: #ececf1;
+  --primary: #ff6b58;
+  --primary-dark: #eb5544;
+  --soft-primary: #fff0ed;
+  --ring-track: #f0f0f4;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--text);
+  background: radial-gradient(circle at 50% -10%, #fff 0, var(--bg) 48%);
+  font-family: 'DM Sans', 'Noto Sans KR', sans-serif;
+}
+button, input { font: inherit; }
+button { cursor: pointer; border: 0; }
+
+.app-shell { width: min(100% - 32px, 560px); margin: 0 auto; padding: 56px 0 28px; }
+.timer-card {
+  overflow: hidden;
+  padding: 32px;
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 30px;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 24px 70px rgba(43, 45, 66, .09);
+}
+.app-header, .settings-heading { display: flex; align-items: center; justify-content: space-between; }
+.eyebrow { margin: 0 0 6px; color: var(--primary); font-size: 11px; font-weight: 800; letter-spacing: .17em; }
+h1 { margin: 0; font-size: clamp(24px, 5vw, 30px); letter-spacing: -.06em; }
+.icon-button { width: 42px; height: 42px; border-radius: 50%; color: var(--text); background: #f7f7fa; transition: .2s; }
+.icon-button:hover { background: var(--soft-primary); transform: translateY(-2px); }
+
+.mode-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 32px 0 28px; padding: 5px; border-radius: 13px; background: #f5f5f8; }
+.mode-tab { padding: 11px 6px; border-radius: 9px; color: var(--muted); background: transparent; font-size: 13px; font-weight: 700; transition: .2s; }
+.mode-tab.active { color: var(--text); background: #fff; box-shadow: 0 3px 12px rgba(35,36,46,.08); }
+
+.timer-area { text-align: center; }
+.progress-ring { display: grid; place-items: center; width: min(66vw, 292px); aspect-ratio: 1; margin: 4px auto 17px; border-radius: 50%; background: conic-gradient(var(--primary) 0deg, var(--primary) 360deg, var(--ring-track) 360deg); position: relative; transition: background .3s linear; }
+.progress-ring::before { content: ''; position: absolute; inset: 12px; border-radius: 50%; background: var(--card); }
+.timer-display { z-index: 1; display: flex; flex-direction: column; gap: 7px; }
+#timeDisplay { font-size: clamp(52px, 14vw, 74px); font-weight: 700; letter-spacing: -.08em; line-height: 1; }
+#statusText { color: var(--muted); font-size: 13px; font-weight: 600; }
+.session-count { margin: 0; color: var(--muted); font-size: 13px; }
+.session-count strong { margin-left: 4px; color: var(--primary); font-size: 16px; }
+
+.controls { display: flex; gap: 10px; margin: 28px 0 32px; }
+.primary-button, .secondary-button { flex: 1; padding: 15px 20px; border-radius: 13px; font-weight: 800; transition: .2s; }
+.primary-button { color: #fff; background: var(--primary); box-shadow: 0 8px 18px rgba(255,107,88,.23); }
+.primary-button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+.secondary-button { color: #626575; background: #f5f5f8; }
+.secondary-button:hover { background: #ededf2; }
+
+.settings { padding-top: 25px; border-top: 1px solid var(--line); }
+h2 { margin: 0; font-size: 15px; letter-spacing: -.03em; }
+.text-button { color: var(--primary); background: transparent; font-size: 13px; font-weight: 800; }
+.setting-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 17px; }
+label > span { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.input-with-unit { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: #fafafd; }
+.input-with-unit input { width: 100%; min-width: 0; padding: 10px 4px 10px 11px; border: 0; outline: 0; color: var(--text); background: transparent; font-weight: 700; }
+.input-with-unit em { padding-right: 9px; color: var(--muted); font-size: 11px; font-style: normal; }
+.footer-note { margin: 20px 0 0; color: #a2a4af; text-align: center; font-size: 12px; }
+
+@media (max-width: 460px) { .app-shell { padding-top: 24px; } .timer-card { padding: 24px 20px; border-radius: 24px; } .setting-grid { gap: 6px; } }
+
+</style>
 </head>
 <body>
-  <h1>카운터</h1>
-  <div id="count">0</div>
-  <button id="dec">- 1</button>
-  <button id="reset">Reset</button>
-  <button id="inc">+ 1</button>
+  <main class="app-shell">
+    <section class="timer-card" aria-labelledby="app-title">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">FOCUS SESSION</p>
+          <h1 id="app-title">뽀모도로 타이머</h1>
+        </div>
+        <button id="soundToggle" class="icon-button" type="button" aria-label="알림음 켜기" aria-pressed="true">🔔</button>
+      </header>
 
-  <script src="script.js"></script>
+      <nav class="mode-tabs" aria-label="타이머 모드">
+        <button class="mode-tab active" type="button" data-mode="pomodoro">집중</button>
+        <button class="mode-tab" type="button" data-mode="shortBreak">짧은 휴식</button>
+        <button class="mode-tab" type="button" data-mode="longBreak">긴 휴식</button>
+      </nav>
+
+      <section class="timer-area" aria-live="polite">
+        <div class="progress-ring" id="progressRing">
+          <div class="timer-display">
+            <span id="timeDisplay">25:00</span>
+            <span id="statusText">집중할 시간이에요</span>
+          </div>
+        </div>
+        <p class="session-count">오늘의 집중 세션 <strong id="sessionCount">0</strong>회</p>
+      </section>
+
+      <div class="controls">
+        <button id="startButton" class="primary-button" type="button">시작</button>
+        <button id="resetButton" class="secondary-button" type="button">초기화</button>
+      </div>
+
+      <section class="settings" aria-labelledby="settings-title">
+        <div class="settings-heading">
+          <h2 id="settings-title">타이머 설정</h2>
+          <button id="applySettings" class="text-button" type="button">적용</button>
+        </div>
+        <div class="setting-grid">
+          <label>
+            <span>집중 시간</span>
+            <div class="input-with-unit"><input id="pomodoroInput" type="number" min="1" max="60" value="25" /><em>분</em></div>
+          </label>
+          <label>
+            <span>짧은 휴식</span>
+            <div class="input-with-unit"><input id="shortBreakInput" type="number" min="1" max="30" value="5" /><em>분</em></div>
+          </label>
+          <label>
+            <span>긴 휴식</span>
+            <div class="input-with-unit"><input id="longBreakInput" type="number" min="1" max="60" value="15" /><em>분</em></div>
+          </label>
+        </div>
+      </section>
+    </section>
+    <p class="footer-note">집중하고, 쉬고, 다시 시작하세요.</p>
+  </main>
+  <script>
+const settings = {
+  pomodoro: 25 * 60,
+  shortBreak: 5 * 60,
+  longBreak: 15 * 60
+};
+
+let currentMode = 'pomodoro';
+let remainingSeconds = settings[currentMode];
+let totalSeconds = settings[currentMode];
+let timerId = null;
+let isRunning = false;
+let soundOn = true;
+let sessionCount = Number(localStorage.getItem('pomodoroSessions') || 0);
+
+const timeDisplay = document.querySelector('#timeDisplay');
+const statusText = document.querySelector('#statusText');
+const startButton = document.querySelector('#startButton');
+const resetButton = document.querySelector('#resetButton');
+const progressRing = document.querySelector('#progressRing');
+const sessionCountDisplay = document.querySelector('#sessionCount');
+const soundToggle = document.querySelector('#soundToggle');
+const modeTabs = document.querySelectorAll('.mode-tab');
+const applySettingsButton = document.querySelector('#applySettings');
+
+const modeLabels = {
+  pomodoro: '집중할 시간이에요',
+  shortBreak: '잠깐 쉬어가세요',
+  longBreak: '충분히 쉬어가세요'
+};
+
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const secs = (seconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${secs}`;
+}
+
+function updateDisplay() {
+  timeDisplay.textContent = formatTime(remainingSeconds);
+  document.title = `${formatTime(remainingSeconds)} · 뽀모도로 타이머`;
+  const progress = totalSeconds ? (totalSeconds - remainingSeconds) / totalSeconds : 0;
+  progressRing.style.background = `conic-gradient(var(--primary) ${progress * 360}deg, var(--ring-track) ${progress * 360}deg)`;
+  sessionCountDisplay.textContent = sessionCount;
+}
+
+function playAlert() {
+  if (!soundOn) return;
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.frequency.value = 660;
+  gain.gain.setValueAtTime(0.001, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.18, audioContext.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.45);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+function finishSession() {
+  clearInterval(timerId);
+  timerId = null;
+  isRunning = false;
+  if (currentMode === 'pomodoro') {
+    sessionCount += 1;
+    localStorage.setItem('pomodoroSessions', sessionCount);
+  }
+  playAlert();
+  startButton.textContent = '다시 시작';
+  statusText.textContent = currentMode === 'pomodoro' ? '집중 세션이 끝났어요!' : '휴식이 끝났어요!';
+  updateDisplay();
+}
+
+function tick() {
+  if (remainingSeconds <= 0) {
+    finishSession();
+    return;
+  }
+  remainingSeconds -= 1;
+  updateDisplay();
+}
+
+function toggleTimer() {
+  if (isRunning) {
+    clearInterval(timerId);
+    timerId = null;
+    isRunning = false;
+    startButton.textContent = '계속하기';
+    statusText.textContent = '잠시 멈췄어요';
+    return;
+  }
+  isRunning = true;
+  startButton.textContent = '일시정지';
+  statusText.textContent = modeLabels[currentMode];
+  timerId = setInterval(tick, 1000);
+}
+
+function setMode(mode) {
+  clearInterval(timerId);
+  timerId = null;
+  isRunning = false;
+  currentMode = mode;
+  totalSeconds = settings[mode];
+  remainingSeconds = totalSeconds;
+  startButton.textContent = '시작';
+  statusText.textContent = modeLabels[mode];
+  modeTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mode === mode));
+  updateDisplay();
+}
+
+function applySettings() {
+  const values = {
+    pomodoro: Number(document.querySelector('#pomodoroInput').value),
+    shortBreak: Number(document.querySelector('#shortBreakInput').value),
+    longBreak: Number(document.querySelector('#longBreakInput').value)
+  };
+  Object.entries(values).forEach(([mode, minutes]) => {
+    if (Number.isFinite(minutes) && minutes >= 1) settings[mode] = Math.min(minutes, 60) * 60;
+  });
+  setMode(currentMode);
+}
+
+startButton.addEventListener('click', toggleTimer);
+resetButton.addEventListener('click', () => setMode(currentMode));
+modeTabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+applySettingsButton.addEventListener('click', applySettings);
+soundToggle.addEventListener('click', () => {
+  soundOn = !soundOn;
+  soundToggle.textContent = soundOn ? '🔔' : '🔕';
+  soundToggle.setAttribute('aria-label', soundOn ? '알림음 끄기' : '알림음 켜기');
+  soundToggle.setAttribute('aria-pressed', String(soundOn));
+});
+
+updateDisplay();
+
+</script>
 </body>
 </html>
