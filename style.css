@@ -1,21 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #20212a;
+  --muted: #8b8e9b;
+  --line: #ececf1;
+  --primary: #ff6b58;
+  --primary-dark: #eb5544;
+  --soft-primary: #fff0ed;
+  --ring-track: #f0f0f4;
+}
+
+* { box-sizing: border-box; }
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 40px;
+  margin: 0;
+  min-width: 320px;
+  color: var(--text);
+  background: radial-gradient(circle at 50% -10%, #fff 0, var(--bg) 48%);
+  font-family: 'DM Sans', 'Noto Sans KR', sans-serif;
 }
+button, input { font: inherit; }
+button { cursor: pointer; border: 0; }
 
-#count {
-  font-size: 48px;
-  margin: 20px 0;
+.app-shell { width: min(100% - 32px, 560px); margin: 0 auto; padding: 56px 0 28px; }
+.timer-card {
+  overflow: hidden;
+  padding: 32px;
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 30px;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 24px 70px rgba(43, 45, 66, .09);
 }
+.app-header, .settings-heading { display: flex; align-items: center; justify-content: space-between; }
+.eyebrow { margin: 0 0 6px; color: var(--primary); font-size: 11px; font-weight: 800; letter-spacing: .17em; }
+h1 { margin: 0; font-size: clamp(24px, 5vw, 30px); letter-spacing: -.06em; }
+.icon-button { width: 42px; height: 42px; border-radius: 50%; color: var(--text); background: #f7f7fa; transition: .2s; }
+.icon-button:hover { background: var(--soft-primary); transform: translateY(-2px); }
 
-button {
-  font-size: 18px;
-  margin: 5px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
+.mode-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 32px 0 28px; padding: 5px; border-radius: 13px; background: #f5f5f8; }
+.mode-tab { padding: 11px 6px; border-radius: 9px; color: var(--muted); background: transparent; font-size: 13px; font-weight: 700; transition: .2s; }
+.mode-tab.active { color: var(--text); background: #fff; box-shadow: 0 3px 12px rgba(35,36,46,.08); }
 
-button:hover {
-  background-color: #fd8a8a;
-}
+.timer-area { text-align: center; }
+.progress-ring { display: grid; place-items: center; width: min(66vw, 292px); aspect-ratio: 1; margin: 4px auto 17px; border-radius: 50%; background: conic-gradient(var(--primary) 0deg, var(--primary) 360deg, var(--ring-track) 360deg); position: relative; transition: background .3s linear; }
+.progress-ring::before { content: ''; position: absolute; inset: 12px; border-radius: 50%; background: var(--card); }
+.timer-display { z-index: 1; display: flex; flex-direction: column; gap: 7px; }
+#timeDisplay { font-size: clamp(52px, 14vw, 74px); font-weight: 700; letter-spacing: -.08em; line-height: 1; }
+#statusText { color: var(--muted); font-size: 13px; font-weight: 600; }
+.session-count { margin: 0; color: var(--muted); font-size: 13px; }
+.session-count strong { margin-left: 4px; color: var(--primary); font-size: 16px; }
+
+.controls { display: flex; gap: 10px; margin: 28px 0 32px; }
+.primary-button, .secondary-button { flex: 1; padding: 15px 20px; border-radius: 13px; font-weight: 800; transition: .2s; }
+.primary-button { color: #fff; background: var(--primary); box-shadow: 0 8px 18px rgba(255,107,88,.23); }
+.primary-button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+.secondary-button { color: #626575; background: #f5f5f8; }
+.secondary-button:hover { background: #ededf2; }
+
+.settings { padding-top: 25px; border-top: 1px solid var(--line); }
+h2 { margin: 0; font-size: 15px; letter-spacing: -.03em; }
+.text-button { color: var(--primary); background: transparent; font-size: 13px; font-weight: 800; }
+.setting-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 17px; }
+label > span { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.input-with-unit { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: #fafafd; }
+.input-with-unit input { width: 100%; min-width: 0; padding: 10px 4px 10px 11px; border: 0; outline: 0; color: var(--text); background: transparent; font-weight: 700; }
+.input-with-unit em { padding-right: 9px; color: var(--muted); font-size: 11px; font-style: normal; }
+.footer-note { margin: 20px 0 0; color: #a2a4af; text-align: center; font-size: 12px; }
+
+@media (max-width: 460px) { .app-shell { padding-top: 24px; } .timer-card { padding: 24px 20px; border-radius: 24px; } .setting-grid { gap: 6px; } }
