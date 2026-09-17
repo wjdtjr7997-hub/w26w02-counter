@@ -24,4 +24,11 @@ resetBtn.addEventListener("click", () => {
   render();
 });
 
+decBtn.addEventListener("click", () => {
+  if (count > 0) {
+    count--
+    render()
+  }
+})
+
 render();
